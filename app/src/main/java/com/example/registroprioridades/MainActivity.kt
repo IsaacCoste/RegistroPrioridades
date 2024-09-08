@@ -95,14 +95,7 @@ class MainActivity : ComponentActivity() {
                         .padding(8.dp),
                     label = { Text("Días Compromiso") },
                     value = diasCompromiso,
-                    onValueChange = { newValue ->
-                        if (newValue.isEmpty() || newValue.all { it.isDigit() }) {
-                            diasCompromiso = newValue
-                            errorMessage = null
-                        } else {
-                            errorMessage = "Días de Compromiso debe ser un número"
-                        }
-                    },
+                    onValueChange = { newValue -> diasCompromiso = newValue },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                 )
                 Spacer(modifier = Modifier.padding(8.dp))
