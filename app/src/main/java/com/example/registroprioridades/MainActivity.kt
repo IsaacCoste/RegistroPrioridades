@@ -135,8 +135,8 @@ class MainActivity : ComponentActivity() {
                                 diasCompromiso.isBlank() -> {
                                     errorMessage = "Todos los campos son requeridos"
                                 }
-                                diasCompromiso.toIntOrNull() ?: 0 <= 0 -> {
-                                    errorMessage = "El campo de días de compromiso debe ser mayor a 0"
+                                (diasCompromiso.toIntOrNull() ?: 0) <= 0 -> {
+                                    errorMessage = "El campo de días compromiso debe ser mayor a 0"
                                 }
                                 verificarDescripcion(descripcion) != null -> {
                                     errorMessage = "La prioridad ya existe"
