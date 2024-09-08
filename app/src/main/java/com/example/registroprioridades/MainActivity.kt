@@ -95,14 +95,7 @@ class MainActivity : ComponentActivity() {
                         .padding(8.dp),
                     label = { Text("Días Compromiso") },
                     value = diasCompromiso,
-                    onValueChange = { newValue ->
-                        if (newValue.isEmpty() || newValue.all { it.isDigit() }) {
-                            diasCompromiso = newValue
-                            errorMessage = null
-                        } else {
-                            errorMessage = "Días de Compromiso debe ser un número"
-                        }
-                    },
+                    onValueChange = { newValue -> diasCompromiso = newValue },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                 )
                 Spacer(modifier = Modifier.padding(8.dp))
@@ -127,9 +120,21 @@ class MainActivity : ComponentActivity() {
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     OutlinedButton(onClick = {
-                        if (descripcion.isNotBlank() && diasCompromiso.isNotBlank()) {
-                            scope.launch {
-                                if (verificarDescripcion(descripcion) == null) {
+                        scope.launch {
+                            when {
+                                descripcion.isBlank() -> {
+                                    errorMessage = "El campo de descripción no puede estar vacío"
+                                }
+                                diasCompromiso.isBlank() -> {
+                                    errorMessage = "Todos los campos son requeridos"
+                                }
+                                (diasCompromiso.toIntOrNull() ?: 0) <= 0 -> {
+                                    errorMessage = "El campo de días compromiso debe ser mayor a 0"
+                                }
+                                verificarDescripcion(descripcion) != null -> {
+                                    errorMessage = "La prioridad ya existe"
+                                }
+                                else -> {
                                     guardarPrioridad(
                                         PrioridadEntity(
                                             descripcion = descripcion,
@@ -139,16 +144,8 @@ class MainActivity : ComponentActivity() {
                                     descripcion = ""
                                     diasCompromiso = ""
                                     errorMessage = null
-                                } else if (descripcion.isBlank()) {
-                                    errorMessage = "El campo de descripción no puede estar vacío"
-                                } else if (diasCompromiso.toInt() <= 0) {
-                                    errorMessage = "El campo de días de compromiso debe ser mayor a 0"
-                                } else {
-                                    errorMessage = "La prioridad ya existe"
                                 }
                             }
-                        } else {
-                            errorMessage = "Todos los campos son requeridos"
                         }
                     }) {
                         Icon(
@@ -247,7 +244,7 @@ class MainActivity : ComponentActivity() {
 
     @Preview(showBackground = true)
     @Composable
-    fun GreetingPreview() {
+    fun PrioridadScreenPreview() {
         RegistroPrioridadesTheme {
             PrioridadScreen()
         }
