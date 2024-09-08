@@ -247,7 +247,7 @@ class MainActivity : ComponentActivity() {
 
     @Preview(showBackground = true)
     @Composable
-    fun GreetingPreview() {
+    fun PrioridadScreenPreview() {
         RegistroPrioridadesTheme {
             PrioridadScreen()
         }
