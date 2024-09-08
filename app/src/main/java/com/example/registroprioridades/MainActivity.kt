@@ -127,9 +127,21 @@ class MainActivity : ComponentActivity() {
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     OutlinedButton(onClick = {
-                        if (descripcion.isNotBlank() && diasCompromiso.isNotBlank()) {
-                            scope.launch {
-                                if (verificarDescripcion(descripcion) == null) {
+                        scope.launch {
+                            when {
+                                descripcion.isBlank() -> {
+                                    errorMessage = "El campo de descripción no puede estar vacío"
+                                }
+                                diasCompromiso.isBlank() -> {
+                                    errorMessage = "Todos los campos son requeridos"
+                                }
+                                diasCompromiso.toIntOrNull() ?: 0 <= 0 -> {
+                                    errorMessage = "El campo de días de compromiso debe ser mayor a 0"
+                                }
+                                verificarDescripcion(descripcion) != null -> {
+                                    errorMessage = "La prioridad ya existe"
+                                }
+                                else -> {
                                     guardarPrioridad(
                                         PrioridadEntity(
                                             descripcion = descripcion,
@@ -139,16 +151,8 @@ class MainActivity : ComponentActivity() {
                                     descripcion = ""
                                     diasCompromiso = ""
                                     errorMessage = null
-                                } else if (descripcion.isBlank()) {
-                                    errorMessage = "El campo de descripción no puede estar vacío"
-                                } else if (diasCompromiso.toInt() <= 0) {
-                                    errorMessage = "El campo de días de compromiso debe ser mayor a 0"
-                                } else {
-                                    errorMessage = "La prioridad ya existe"
                                 }
                             }
-                        } else {
-                            errorMessage = "Todos los campos son requeridos"
                         }
                     }) {
                         Icon(
