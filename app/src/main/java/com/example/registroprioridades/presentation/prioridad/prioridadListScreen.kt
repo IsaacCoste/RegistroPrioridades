@@ -1,4 +1,4 @@
-package com.example.registroprioridades.presentation.navigation.prioridad
+package com.example.registroprioridades.presentation.prioridad
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
