@@ -10,10 +10,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import com.example.registroprioridades.data.database.PrioridadDb
-import com.example.registroprioridades.presentation.navigation.prioridad.PrioridadDeleteScreen
-import com.example.registroprioridades.presentation.navigation.prioridad.PrioridadEditScreen
-import com.example.registroprioridades.presentation.navigation.prioridad.PrioridadListScreen
-import com.example.registroprioridades.presentation.navigation.prioridad.PrioridadScreen
+import com.example.registroprioridades.presentation.prioridad.PrioridadDeleteScreen
+import com.example.registroprioridades.presentation.prioridad.PrioridadEditScreen
+import com.example.registroprioridades.presentation.prioridad.PrioridadListScreen
+import com.example.registroprioridades.presentation.prioridad.PrioridadScreen
 
 @Composable
 fun PrioridadNavHost(
