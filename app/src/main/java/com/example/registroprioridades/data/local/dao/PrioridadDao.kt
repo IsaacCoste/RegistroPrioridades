@@ -1,11 +1,11 @@
-package com.example.registroprioridades.data.dao
+package com.example.registroprioridades.data.local.dao
 
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Query
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
-import com.example.registroprioridades.data.entities.PrioridadEntity
+import com.example.registroprioridades.data.local.entities.PrioridadEntity
 
 @Dao
 interface PrioridadDao {
