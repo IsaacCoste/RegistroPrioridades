@@ -12,6 +12,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -20,29 +21,38 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.registroprioridades.data.database.PrioridadDb
-import com.example.registroprioridades.data.entities.PrioridadEntity
-import kotlinx.coroutines.launch
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
 fun PrioridadScreen(
-    prioridadDb: PrioridadDb,
+    viewModel: PrioridadViewModel = hiltViewModel(),
     goBack: () -> Unit
 ) {
-    var descripcion by remember { mutableStateOf("") }
-    var diasCompromiso by remember { mutableStateOf("") }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
-    val scope = rememberCoroutineScope()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    PrioridadBodyScreen(
+        uiState = uiState,
+        onDescripcionChange = viewModel::onDescripcionChange,
+        onDiasCompromisoChange = viewModel::onDiasCompromisoChange,
+        savePrioridad = viewModel::save,
+        goBack = goBack
+    )
+}
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PrioridadBodyScreen(
+    uiState: UiState,
+    onDescripcionChange: (String) -> Unit,
+    onDiasCompromisoChange: (Int) -> Unit,
+    savePrioridad: () -> Unit,
+    goBack: () -> Unit
+) {
     Scaffold { innerPadding ->
         Column(
             modifier = Modifier
@@ -64,27 +74,23 @@ fun PrioridadScreen(
                     .fillMaxWidth()
                     .padding(8.dp),
                 label = { Text("Descripción") },
-                value = descripcion,
-                onValueChange = { descripcion = it }
+                value = uiState.descripcion,
+                onValueChange = onDescripcionChange
             )
             OutlinedTextField(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(8.dp),
                 label = { Text("Días Compromiso") },
-                value = diasCompromiso,
+                value = uiState.diasCompromiso.toString(),
                 onValueChange = { newValue ->
-                    if (newValue.isEmpty() || newValue.all { it.isDigit() }) {
-                        diasCompromiso = newValue
-                        errorMessage = null
-                    } else {
-                        errorMessage = "Días de Compromiso debe ser un número"
-                    }
+                    val diasCompromiso = newValue.toIntOrNull() ?: 0
+                    onDiasCompromisoChange(diasCompromiso)
                 },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
             )
             Spacer(modifier = Modifier.padding(8.dp))
-            errorMessage?.let {
+            uiState.errorMessage?.let {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -105,40 +111,17 @@ fun PrioridadScreen(
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 OutlinedButton(onClick = goBack) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Volver"
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text("Volver")
-            }
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Volver"
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Volver")
+                }
                 OutlinedButton(onClick = {
-                    if (descripcion.isNotBlank() && diasCompromiso.isNotBlank()) {
-                        scope.launch {
-                            val existingPrioridad = verificarDescripcion(prioridadDb, descripcion)
-                            when {
-                                existingPrioridad != null -> errorMessage = "La prioridad ya existe"
-                                descripcion.isBlank() -> errorMessage = "El campo de descripción no puede estar vacío"
-                                diasCompromiso.toInt() <= 0 -> errorMessage = "El campo de días de compromiso debe ser mayor a 0"
-                                else -> {
-                                    guardarPrioridad(
-                                        prioridadDb,
-                                        PrioridadEntity(
-                                            descripcion = descripcion,
-                                            diasCompromiso = diasCompromiso.toInt()
-                                        )
-                                    )
-                                    descripcion = ""
-                                    diasCompromiso = ""
-                                    errorMessage = null
-                                }
-                            }
-                        }
-                    } else {
-                        errorMessage = "Todos los campos son requeridos"
-                    }
-                })
-                {
+                    savePrioridad()
+                }
+                ) {
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = "Guardar"
@@ -148,12 +131,4 @@ fun PrioridadScreen(
             }
         }
     }
-}
-
-private suspend fun guardarPrioridad(prioridadDb: PrioridadDb, prioridad: PrioridadEntity) {
-    prioridadDb.prioridadDao().save(prioridad)
-}
-
-private suspend fun verificarDescripcion(prioridadDb: PrioridadDb, descripcion: String): PrioridadEntity? {
-    return prioridadDb.prioridadDao().searchDescripcion(descripcion)
 }
