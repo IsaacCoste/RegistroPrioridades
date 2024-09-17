@@ -20,35 +20,36 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.registroprioridades.data.database.PrioridadDb
-import com.example.registroprioridades.data.entities.PrioridadEntity
-import kotlinx.coroutines.launch
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
 fun PrioridadDeleteScreen(
-    prioridadDb: PrioridadDb,
+    viewModel: PrioridadViewModel = hiltViewModel(),
     prioridadId: Int,
     goBack: () -> Unit
 ) {
-    var prioridad by remember { mutableStateOf<PrioridadEntity?>(null) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
-    val scope = rememberCoroutineScope()
-
     LaunchedEffect(prioridadId) {
-        prioridad = prioridadDb.prioridadDao().find(prioridadId)
-        if (prioridad == null) {
-            errorMessage = "Prioridad no encontrada."
-        }
+        viewModel.selectedPrioridad(prioridadId)
     }
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    PrioridadDeleteBodyScreen(
+        uiState = uiState,
+        onDeletePrioridad = viewModel::delete,
+        goBack = goBack
+    )
+}
 
+@Composable
+fun PrioridadDeleteBodyScreen(
+    uiState: UiState,
+    onDeletePrioridad: () -> Unit,
+    goBack: () -> Unit
+) {
     Scaffold { innerPadding ->
         Column(
             modifier = Modifier
@@ -75,68 +76,54 @@ fun PrioridadDeleteScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    prioridad?.let {
-                        Text(
-                            text = "Eliminar",
-                            style = MaterialTheme.typography.headlineSmall,
-                            modifier = Modifier.fillMaxWidth(),
-                            textAlign = TextAlign.Center
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "Descripción: ${it.descripcion}",
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 8.dp),
-                            textAlign = TextAlign.Center
-                        )
-                        Text(
-                            text = "Días de Compromiso: ${it.diasCompromiso}",
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 16.dp),
-                            textAlign = TextAlign.Center
-                        )
+                    Text(
+                        text = "Eliminar",
+                        style = MaterialTheme.typography.headlineSmall,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "Descripción: ${uiState.descripcion}",
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp),
+                        textAlign = TextAlign.Center
+                    )
+                    Text(
+                        text = "Días de Compromiso: ${uiState.diasCompromiso}",
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
+                        textAlign = TextAlign.Center
+                    )
 
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 16.dp),
-                            horizontalArrangement = Arrangement.SpaceEvenly
-                        ) {
-                            OutlinedButton(onClick = goBack) {
-                                Icon(
-                                    imageVector = Icons.Default.ArrowBack,
-                                    contentDescription = "Volver"
-                                )
-                                Text("Cancelar")
-                            }
-                            OutlinedButton(
-                                onClick = {
-                                    scope.launch {
-                                        prioridadDb.prioridadDao().delete(it)
-                                        goBack()
-                                    }
-                                }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Delete,
-                                    contentDescription = "Eliminar"
-                                )
-                                Text("Eliminar")
-                            }
-                        }
-                    } ?: run {
-                        errorMessage?.let {
-                            Text(
-                                text = it,
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.error,
-                                modifier = Modifier.fillMaxWidth(),
-                                textAlign = TextAlign.Center
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 16.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        OutlinedButton(onClick = goBack) {
+                            Icon(
+                                imageVector = Icons.Default.ArrowBack,
+                                contentDescription = "Volver"
                             )
+                            Text("Cancelar")
+                        }
+                        OutlinedButton(
+                            onClick = {
+                                onDeletePrioridad()
+                                goBack()
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Eliminar"
+                            )
+                            Text("Eliminar")
                         }
                     }
                 }
