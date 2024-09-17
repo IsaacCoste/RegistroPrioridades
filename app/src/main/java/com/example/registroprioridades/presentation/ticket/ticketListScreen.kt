@@ -1,7 +1,6 @@
-package com.example.registroprioridades.presentation.prioridad
+package com.example.registroprioridades.presentation.ticket
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -13,6 +12,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
@@ -31,54 +32,56 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.registroprioridades.data.local.entities.PrioridadEntity
+import com.example.registroprioridades.data.local.entities.TicketEntity
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 @Composable
-fun PrioridadListScreen(
-    viewModel: PrioridadViewModel = hiltViewModel(),
-    createPrioridad: () -> Unit,
-    onEditPrioridad: (Int) -> Unit,
-    onDeletePrioridad: (Int) -> Unit
+fun TicketListScreen(
+    viewModel: TicketViewModel = hiltViewModel(),
+    createTicket: () -> Unit,
+    onEditTicket: (Int) -> Unit,
+    onDeleteTicket: (Int) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    PrioridadListBodyScreen(
+    TicketListBodyScreen(
         uiState = uiState,
-        createPrioridad = createPrioridad,
-        onEditPrioridad = onEditPrioridad,
-        onDeletePrioridad = onDeletePrioridad
+        createTicket = createTicket,
+        onEditTicket = onEditTicket,
+        onDeleteTicket = onDeleteTicket
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PrioridadListBodyScreen(
+fun TicketListBodyScreen(
     uiState: UiState,
-    createPrioridad: () -> Unit,
-    onEditPrioridad: (Int) -> Unit,
-    onDeletePrioridad: (Int) -> Unit
+    createTicket: () -> Unit,
+    onEditTicket: (Int) -> Unit,
+    onDeleteTicket: (Int) -> Unit
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Lista de Prioridades") },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(                )
+                title = { Text("Lista de Tickets") },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors()
             )
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = createPrioridad,
+                onClick = createTicket,
                 containerColor = MaterialTheme.colorScheme.tertiary,
                 contentColor = Color.White
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "Agregar Prioridad"
+                    contentDescription = "Agregar Ticket"
                 )
             }
         }
@@ -94,11 +97,12 @@ fun PrioridadListBodyScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(vertical = 16.dp)
             ) {
-                items(uiState.prioridades) { prioridad ->
-                    ListRow(
-                        prioridad = prioridad,
-                        onEditPrioridad = onEditPrioridad,
-                        onDeletePrioridad = onDeletePrioridad
+                items(uiState.tickets) { ticket ->
+                    TicketRow(
+                        ticket = ticket,
+                        prioridades = uiState.prioridades,
+                        onEditTicket = onEditTicket,
+                        onDeleteTicket = onDeleteTicket
                     )
                 }
             }
@@ -107,36 +111,55 @@ fun PrioridadListBodyScreen(
 }
 
 @Composable
-fun ListRow(
-    prioridad: PrioridadEntity,
-    onEditPrioridad: (Int) -> Unit,
-    onDeletePrioridad: (Int) -> Unit
+fun TicketRow(
+    ticket: TicketEntity,
+    prioridades: List<PrioridadEntity>,
+    onEditTicket: (Int) -> Unit,
+    onDeleteTicket: (Int) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
+    val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
 
-    Column {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { expanded = true }
-                .padding(16.dp)
+    val descripcionPrioridad = prioridades.find { prioridad ->
+        prioridad.prioridadId == ticket.prioridadId
+    }?.descripcion ?: "Sin Prioridad"
+
+    Card(
+        modifier = Modifier
+            .padding(vertical = 8.dp)
+            .fillMaxWidth()
+            .clickable { expanded = true },
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
         ) {
-            Column {
-                Text(
-                    text = "ID: " + prioridad.prioridadId.toString(),
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center
-                )
-                Text(
-                    text = "Descripción: " + prioridad.descripcion,
-                    textAlign = TextAlign.Center
-                )
-                Text(
-                    text = "Días de Compromiso: " + prioridad.diasCompromiso.toString(),
-                    textAlign = TextAlign.Center
-                )
-            }
+            Text(
+                text = "TicketID: ${ticket.ticketId}",
+                textAlign = TextAlign.Center
+            )
+            Text(
+                text = "Fecha: ${ticket.fecha?.let { dateFormat.format(it) }}",
+                textAlign = TextAlign.Center
+            )
+            Text(
+                text = "Cliente: ${ticket.cliente}",
+                textAlign = TextAlign.Center
+            )
+            Text(
+                text = "Asunto: ${ticket.asunto}",
+                textAlign = TextAlign.Center
+            )
+            Text(
+                text = "Descripción: ${ticket.descripcion}",
+                textAlign = TextAlign.Center
+            )
+            Text(
+                text = "Prioridad: $descripcionPrioridad",
+                textAlign = TextAlign.Center
+            )
         }
+
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false }
@@ -145,17 +168,17 @@ fun ListRow(
                 text = { Text("Editar") },
                 onClick = {
                     expanded = false
-                    onEditPrioridad(prioridad.prioridadId!!)
+                    onEditTicket(ticket.ticketId!!)
                 }
             )
             DropdownMenuItem(
                 text = { Text("Eliminar") },
                 onClick = {
                     expanded = false
-                    onDeletePrioridad(prioridad.prioridadId!!)
+                    onDeleteTicket(ticket.ticketId!!)
                 }
             )
         }
-        Divider(color = Color.Gray, thickness = 1.dp, modifier = Modifier.padding(vertical = 8.dp))
     }
+    Divider(color = Color.Gray, thickness = 1.dp, modifier = Modifier.padding(vertical = 8.dp))
 }

@@ -1,13 +1,6 @@
-package com.example.registroprioridades.presentation.prioridad
+package com.example.registroprioridades.presentation.ticket
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
@@ -26,30 +19,35 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 @Composable
-fun PrioridadDeleteScreen(
-    viewModel: PrioridadViewModel = hiltViewModel(),
-    prioridadId: Int,
+fun TicketDeleteScreen(
+    viewModel: TicketViewModel = hiltViewModel(),
+    ticketId: Int,
     goBack: () -> Unit
 ) {
-    LaunchedEffect(prioridadId) {
-        viewModel.selectedPrioridad(prioridadId)
+    LaunchedEffect(ticketId) {
+        viewModel.selectedTicket(ticketId)
     }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    PrioridadDeleteBodyScreen(
+    TicketDeleteBodyScreen(
         uiState = uiState,
-        onDeletePrioridad = viewModel::delete,
+        onDeleteTicket = viewModel::delete,
         goBack = goBack
     )
 }
 
 @Composable
-fun PrioridadDeleteBodyScreen(
+fun TicketDeleteBodyScreen(
     uiState: UiState,
-    onDeletePrioridad: () -> Unit,
+    onDeleteTicket: () -> Unit,
     goBack: () -> Unit
 ) {
+    val dateFormatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    val formattedDate = uiState.fecha?.let { dateFormatter.format(it) } ?: ""
+
     Scaffold { innerPadding ->
         Column(
             modifier = Modifier
@@ -58,7 +56,7 @@ fun PrioridadDeleteBodyScreen(
                 .padding(16.dp)
         ) {
             Text(
-                text = "Estás seguro de que deseas eliminar la prioridad",
+                text = "¿Estás seguro de que deseas eliminar el ticket?",
                 style = MaterialTheme.typography.headlineSmall,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -77,12 +75,36 @@ fun PrioridadDeleteBodyScreen(
                     verticalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = "Eliminar",
+                        text = "Eliminar Ticket",
                         style = MaterialTheme.typography.headlineSmall,
                         modifier = Modifier.fillMaxWidth(),
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "Cliente: ${uiState.cliente}",
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp),
+                        textAlign = TextAlign.Center
+                    )
+                    Text(
+                        text = "Asunto: ${uiState.asunto}",
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp),
+                        textAlign = TextAlign.Center
+                    )
+                    Text(
+                        text = "Fecha: ${formattedDate}",
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp),
+                        textAlign = TextAlign.Center
+                    )
                     Text(
                         text = "Descripción: ${uiState.descripcion}",
                         style = MaterialTheme.typography.bodyLarge,
@@ -92,7 +114,7 @@ fun PrioridadDeleteBodyScreen(
                         textAlign = TextAlign.Center
                     )
                     Text(
-                        text = "Días de Compromiso: ${uiState.diasCompromiso}",
+                        text = "Prioridad: ${uiState.prioridadId}",
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -115,7 +137,7 @@ fun PrioridadDeleteBodyScreen(
                         }
                         OutlinedButton(
                             onClick = {
-                                onDeletePrioridad()
+                                onDeleteTicket()
                                 goBack()
                             }
                         ) {

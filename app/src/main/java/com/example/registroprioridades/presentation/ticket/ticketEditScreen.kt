@@ -1,4 +1,4 @@
-package com.example.registroprioridades.presentation.prioridad
+package com.example.registroprioridades.presentation.ticket
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -28,34 +28,46 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
-fun PrioridadEditScreen(
-    viewModel: PrioridadViewModel = hiltViewModel(),
-    prioridadId: Int,
+fun TicketEditScreen(
+    viewModel: TicketViewModel = hiltViewModel(),
+    ticketId: Int,
     goBack: () -> Unit
 ) {
-    LaunchedEffect(prioridadId) {
-        viewModel.selectedPrioridad(prioridadId)
+    LaunchedEffect(ticketId) {
+        viewModel.selectedTicket(ticketId)
     }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    PrioridadEditBodyScreen(
+    TicketEditBodyScreen(
         uiState = uiState,
+        onFechaChange = viewModel::onFechaChange,
+        onClienteChange = viewModel::onClienteChange,
+        onAsuntoChange = viewModel::onAsuntoChange,
         onDescripcionChange = viewModel::onDescripcionChange,
-        onDiasCompromisoChange = viewModel::onDiasCompromisoChange,
-        savePrioridad = viewModel::save,
+        onPrioridadIdChange = viewModel::onPrioridadChange,
+        saveTicket = viewModel::save,
         goBack = goBack
     )
 }
 
 @Composable
-fun PrioridadEditBodyScreen(
+fun TicketEditBodyScreen(
     uiState: UiState,
+    onFechaChange: (Date) -> Unit,
+    onClienteChange: (String) -> Unit,
+    onAsuntoChange: (String) -> Unit,
     onDescripcionChange: (String) -> Unit,
-    onDiasCompromisoChange: (Int) -> Unit,
-    savePrioridad: () -> Unit,
+    onPrioridadIdChange: (Int) -> Unit,
+    saveTicket: () -> Unit,
     goBack: () -> Unit
 ) {
+    val dateFormatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    val formattedDate = uiState.fecha?.let { dateFormatter.format(it) } ?: ""
+
     Scaffold { innerPadding ->
         Column(
             modifier = Modifier
@@ -64,13 +76,44 @@ fun PrioridadEditBodyScreen(
                 .padding(8.dp)
         ) {
             Text(
-                text = "Editar Prioridad",
+                text = "Editar Registro de Tickets",
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 16.dp),
                 style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.primary,
                 textAlign = TextAlign.Center
+            )
+            OutlinedTextField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                label = { Text("Fecha") },
+                value = formattedDate,
+                readOnly = true,
+                onValueChange = { newValue ->
+                    val newDate = dateFormatter.parse(newValue)
+                    if (newDate != null) {
+                        onFechaChange(newDate)
+                    }
+                },
+                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
+            )
+            OutlinedTextField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                label = { Text("Cliente") },
+                value = uiState.cliente,
+                onValueChange = onClienteChange
+            )
+            OutlinedTextField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                label = { Text("Asunto") },
+                value = uiState.asunto,
+                onValueChange = onAsuntoChange
             )
             OutlinedTextField(
                 modifier = Modifier
@@ -84,11 +127,12 @@ fun PrioridadEditBodyScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(8.dp),
-                label = { Text("Días Compromiso") },
-                value = uiState.diasCompromiso.toString(),
+                label = { Text("Prioridad") },
+                value = uiState.prioridadId.toString(),
+                readOnly = true,
                 onValueChange = { newValue ->
-                    val diasCompromiso = newValue.toIntOrNull() ?: 0
-                    onDiasCompromisoChange(diasCompromiso)
+                    val prioridad = newValue.toIntOrNull() ?: 0
+                    onPrioridadIdChange(prioridad)
                 },
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
             )
@@ -106,6 +150,7 @@ fun PrioridadEditBodyScreen(
                     )
                 }
             }
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -120,18 +165,16 @@ fun PrioridadEditBodyScreen(
                     Spacer(modifier = Modifier.width(4.dp))
                     Text("Volver")
                 }
-                OutlinedButton(
-                    onClick = savePrioridad,
-                ) {
+                OutlinedButton(onClick = {
+                    saveTicket()
+                }) {
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = "Guardar"
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
                     Text("Guardar")
                 }
             }
         }
     }
 }
-
