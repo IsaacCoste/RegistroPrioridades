@@ -21,39 +21,41 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.registroprioridades.data.database.PrioridadDb
-import com.example.registroprioridades.data.entities.PrioridadEntity
-import kotlinx.coroutines.launch
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
 fun PrioridadEditScreen(
-    prioridadDb: PrioridadDb,
+    viewModel: PrioridadViewModel = hiltViewModel(),
     prioridadId: Int,
     goBack: () -> Unit
 ) {
-    var prioridad by remember { mutableStateOf<PrioridadEntity?>(null) }
-    var descripcion by remember { mutableStateOf("") }
-    var diasCompromiso by remember { mutableStateOf("") }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
-    val scope = rememberCoroutineScope()
-
     LaunchedEffect(prioridadId) {
-        prioridad = prioridadDb.prioridadDao().find(prioridadId)
-        prioridad?.let {
-            descripcion = it.descripcion
-            diasCompromiso = it.diasCompromiso.toString()
-        }
+        viewModel.selectedPrioridad(prioridadId)
     }
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    PrioridadEditBodyScreen(
+        uiState = uiState,
+        onDescripcionChange = viewModel::onDescripcionChange,
+        onDiasCompromisoChange = viewModel::onDiasCompromisoChange,
+        savePrioridad = viewModel::save,
+        goBack = goBack
+    )
+}
 
+@Composable
+fun PrioridadEditBodyScreen(
+    uiState: UiState,
+    onDescripcionChange: (String) -> Unit,
+    onDiasCompromisoChange: (Int) -> Unit,
+    savePrioridad: () -> Unit,
+    goBack: () -> Unit
+) {
     Scaffold { innerPadding ->
         Column(
             modifier = Modifier
@@ -75,20 +77,23 @@ fun PrioridadEditScreen(
                     .fillMaxWidth()
                     .padding(8.dp),
                 label = { Text("Descripción") },
-                value = descripcion,
-                onValueChange = { descripcion = it }
+                value = uiState.descripcion,
+                onValueChange = onDescripcionChange
             )
             OutlinedTextField(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(8.dp),
                 label = { Text("Días Compromiso") },
-                value = diasCompromiso,
-                onValueChange = { newValue -> diasCompromiso = newValue },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                value = uiState.diasCompromiso.toString(),
+                onValueChange = { newValue ->
+                    val diasCompromiso = newValue.toIntOrNull() ?: 0
+                    onDiasCompromisoChange(diasCompromiso)
+                },
+                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
             )
             Spacer(modifier = Modifier.padding(8.dp))
-            errorMessage?.let {
+            uiState.errorMessage?.let {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -101,7 +106,6 @@ fun PrioridadEditScreen(
                     )
                 }
             }
-
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -116,37 +120,9 @@ fun PrioridadEditScreen(
                     Spacer(modifier = Modifier.width(4.dp))
                     Text("Volver")
                 }
-                OutlinedButton(onClick = {
-                    scope.launch {
-                        when {
-                            descripcion.isBlank() -> {
-                                errorMessage = "El campo de descripción no puede estar vacío"
-                            }
-                            diasCompromiso.isBlank() -> {
-                                errorMessage = "Todos los campos son requeridos"
-                            }
-                            (diasCompromiso.toIntOrNull() ?: 0) <= 0 -> {
-                                errorMessage = "El campo de días compromiso debe ser mayor a 0"
-                            }
-                            verificarDescripcion(prioridadDb, descripcion, prioridadId) != null -> {
-                                errorMessage = "La prioridad ya existe"
-                            }
-                            else -> {
-                                prioridad?.let {
-                                    val prioridadActualizada = it.copy(
-                                        descripcion = descripcion,
-                                        diasCompromiso = diasCompromiso.toInt()
-                                    )
-                                    guardarPrioridad(prioridadDb, prioridadActualizada)
-                                    descripcion = ""
-                                    diasCompromiso = ""
-                                    errorMessage = null
-                                    goBack()
-                                }
-                            }
-                        }
-                    }
-                }) {
+                OutlinedButton(
+                    onClick = savePrioridad,
+                ) {
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = "Guardar"
@@ -159,15 +135,3 @@ fun PrioridadEditScreen(
     }
 }
 
-private suspend fun guardarPrioridad(prioridadDb: PrioridadDb, prioridad: PrioridadEntity) {
-    prioridadDb.prioridadDao().save(prioridad)
-}
-
-private suspend fun verificarDescripcion(prioridadDb: PrioridadDb, descripcion: String, prioridadId: Int): PrioridadEntity? {
-    val prioridadExistente = prioridadDb.prioridadDao().searchDescripcion(descripcion)
-    return if (prioridadExistente != null && prioridadExistente.prioridadId != prioridadId) {
-        prioridadExistente
-    } else {
-        null
-    }
-}
