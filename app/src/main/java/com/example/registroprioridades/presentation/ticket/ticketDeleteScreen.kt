@@ -2,6 +2,7 @@ package com.example.registroprioridades.presentation.ticket
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
@@ -46,7 +47,7 @@ fun TicketDeleteBodyScreen(
     goBack: () -> Unit
 ) {
     val dateFormatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-    val formattedDate = uiState.fecha?.let { dateFormatter.format(it) } ?: ""
+    val formattedDate = uiState.fecha.let { dateFormatter.format(it) } ?: ""
 
     Scaffold { innerPadding ->
         Column(
@@ -82,7 +83,7 @@ fun TicketDeleteBodyScreen(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "Cliente: ${uiState.cliente}",
+                        text = "Cliente: ${uiState.clienteId}",
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -130,7 +131,7 @@ fun TicketDeleteBodyScreen(
                     ) {
                         OutlinedButton(onClick = goBack) {
                             Icon(
-                                imageVector = Icons.Default.ArrowBack,
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = "Volver"
                             )
                             Text("Cancelar")
