@@ -3,8 +3,9 @@ package com.example.registroprioridades.presentation.ticket
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -21,21 +22,30 @@ import java.util.*
 fun TicketScreen(
     viewModel: TicketViewModel = hiltViewModel(),
     TicketId: Int,
-    goBack: () -> Unit
+    goBack: () -> Unit,
+    isTicketDelete: Boolean
 ) {
     LaunchedEffect(TicketId) {
-        viewModel.selectedTicket(TicketId)
+        if (isTicketDelete) {
+            viewModel.selectedTicket(TicketId)
+        } else {
+            viewModel.selectedTicket(TicketId)
+        }
     }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     TicketBodyScreen(
         uiState = uiState,
         onFechaChange = viewModel::onFechaChange,
-        onClienteChange = viewModel::onClienteChange,
+        onClienteIdChange = viewModel::onClienteIdChange,
+        onSistemaIdChange = viewModel::onSistemaIdChange,
+        onPrioridadIdChange = viewModel::onPrioridadChange,
+        onSolicitadoPorChange = viewModel::onSolicitadoPorChange,
         onAsuntoChange = viewModel::onAsuntoChange,
         onDescripcionChange = viewModel::onDescripcionChange,
-        onPrioridadChange = viewModel::onPrioridadChange,
         saveTicket = viewModel::save,
-        goBack = goBack
+        deleteTicket = viewModel::delete,
+        goBack = goBack,
+        isTicketDelete = isTicketDelete
     )
 }
 
@@ -44,18 +54,24 @@ fun TicketScreen(
 fun TicketBodyScreen(
     uiState: UiState,
     onFechaChange: (Date) -> Unit,
-    onClienteChange: (String) -> Unit,
+    onClienteIdChange: (Int) -> Unit,
+    onSistemaIdChange: (Int) -> Unit,
+    onPrioridadIdChange: (Int) -> Unit,
+    onSolicitadoPorChange: (String) -> Unit,
     onAsuntoChange: (String) -> Unit,
     onDescripcionChange: (String) -> Unit,
-    onPrioridadChange: (Int) -> Unit,
     saveTicket: () -> Unit,
-    goBack: () -> Unit
+    deleteTicket: () -> Unit,
+    goBack: () -> Unit,
+    isTicketDelete: Boolean
 ) {
     val dateFormatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-    val formattedDate = uiState.fecha?.let { dateFormatter.format(it) } ?: ""
+    val formattedDate = uiState.fecha.let { dateFormatter.format(it) } ?: ""
 
     var showDatePicker by remember { mutableStateOf(false) }
-    var expanded by remember { mutableStateOf(false) }
+    var clienteExpanded by remember { mutableStateOf(false) }
+    var sistemaExpanded by remember { mutableStateOf(false) }
+    var prioridadExpanded by remember { mutableStateOf(false) }
 
     Scaffold { innerPadding ->
         Column(
@@ -96,16 +112,114 @@ fun TicketBodyScreen(
                     onDismissRequest = { showDatePicker = false }
                 )
             }
+            Box(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                        .clickable { clienteExpanded = true },
+                    label = { Text("Cliente") },
+                    value = if (uiState.clienteId != 0) uiState.clientes.firstOrNull { it.clienteId == uiState.clienteId }?.nombre ?: "" else "",
+                    onValueChange = {},
+                    readOnly = true,
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = null,
+                            modifier = Modifier.clickable { clienteExpanded = true }
+                        )
+                    }
+                )
+                DropdownMenu(
+                    expanded = clienteExpanded,
+                    onDismissRequest = { clienteExpanded = false }
+                ) {
+                    uiState.clientes.forEach { cliente ->
+                        DropdownMenuItem(
+                            text = { Text(cliente.nombre) },
+                            onClick = {
+                                onClienteIdChange(cliente.clienteId ?: 0)
+                                clienteExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
+            Box(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                        .clickable { sistemaExpanded = true },
+                    label = { Text("Sistema") },
+                    value = if (uiState.sistemaId != 0) uiState.sistemas.firstOrNull { it.sistemasId == uiState.sistemaId }?.sistemaNombre ?: "" else "",
+                    onValueChange = {},
+                    readOnly = true,
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = null,
+                            modifier = Modifier.clickable { sistemaExpanded = true }
+                        )
+                    }
+                )
+                DropdownMenu(
+                    expanded = sistemaExpanded,
+                    onDismissRequest = { sistemaExpanded = false }
+                ) {
+                    uiState.sistemas.forEach { sistema ->
+                        DropdownMenuItem(
+                            text = { Text(sistema.sistemaNombre) },
+                            onClick = {
+                                onSistemaIdChange(sistema.sistemasId ?: 0)
+                                sistemaExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
+            Box(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                        .clickable { prioridadExpanded = true },
+                    label = { Text("Prioridad") },
+                    value = uiState.prioridades.firstOrNull { it.prioridadId == uiState.prioridadId }?.descripción ?: "",
+                    onValueChange = {},
+                    readOnly = true,
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = null,
+                            modifier = Modifier.clickable { prioridadExpanded = true }
+                        )
+                    }
+                )
+                DropdownMenu(
+                    expanded = prioridadExpanded,
+                    onDismissRequest = { prioridadExpanded = false }
+                ) {
+                    uiState.prioridades.forEach { prioridad ->
+                        DropdownMenuItem(
+                            text = { Text(prioridad.descripción) },
+                            onClick = {
+                                onPrioridadIdChange(prioridad.prioridadId ?: 0)
+                                prioridadExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
 
             OutlinedTextField(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(8.dp),
-                label = { Text("Cliente") },
-                value = uiState.cliente,
-                onValueChange = onClienteChange
+                label = { Text("Solicitado por") },
+                value = uiState.solicitadoPor,
+                onValueChange = onSolicitadoPorChange
             )
-
             OutlinedTextField(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -123,44 +237,6 @@ fun TicketBodyScreen(
                 value = uiState.descripcion,
                 onValueChange = onDescripcionChange
             )
-
-            Box(modifier = Modifier.fillMaxWidth()) {
-
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    OutlinedTextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp)
-                            .clickable { expanded = true },
-                        label = { Text("Prioridad") },
-                        value = uiState.prioridades.firstOrNull { it.prioridadId == uiState.prioridadId }?.descripcion ?: "",
-                        onValueChange = {},
-                        readOnly = true,
-                        trailingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = null,
-                                modifier = Modifier.clickable { expanded = true }
-                            )
-                        }
-                    )
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false }
-                    ) {
-                        uiState.prioridades.forEach { prioridad ->
-                            DropdownMenuItem(
-                                text = { Text(prioridad.descripcion) },
-                                onClick = {
-                                    onPrioridadChange(prioridad.prioridadId ?: 0)
-                                    expanded = false
-                                }
-                            )
-                        }
-                    }
-                }
-
-            }
 
             Spacer(modifier = Modifier.padding(8.dp))
 
@@ -186,18 +262,29 @@ fun TicketBodyScreen(
             ) {
                 OutlinedButton(onClick = goBack) {
                     Icon(
-                        imageVector = Icons.Default.ArrowBack,
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Volver"
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text("Volver")
                 }
-                OutlinedButton(onClick = saveTicket) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Guardar"
-                    )
-                    Text("Guardar")
+                if (!isTicketDelete) {
+                    OutlinedButton(onClick = saveTicket) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Guardar"
+                        )
+                        Text("Guardar")
+                    }
+                } else {
+                    OutlinedButton(onClick = deleteTicket) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            tint = Color.Red,
+                            contentDescription = "Eliminar"
+                        )
+                        Text("Eliminar")
+                    }
                 }
             }
         }
