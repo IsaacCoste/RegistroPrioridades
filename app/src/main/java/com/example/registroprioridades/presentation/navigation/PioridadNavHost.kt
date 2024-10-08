@@ -5,15 +5,15 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
+import com.example.registroprioridades.presentation.cliente.ClienteListScreen
+import com.example.registroprioridades.presentation.cliente.ClienteScreen
 import com.example.registroprioridades.presentation.home.HomeScreen
-import com.example.registroprioridades.presentation.prioridad.PrioridadDeleteScreen
-import com.example.registroprioridades.presentation.prioridad.PrioridadEditScreen
 import com.example.registroprioridades.presentation.prioridad.PrioridadListScreen
 import com.example.registroprioridades.presentation.prioridad.PrioridadScreen
-import com.example.registroprioridades.presentation.ticket.TicketDeleteScreen
-import com.example.registroprioridades.presentation.ticket.TicketEditScreen
-import com.example.registroprioridades.presentation.ticket.TicketScreen
+import com.example.registroprioridades.presentation.sistema.SistemaListScreen
+import com.example.registroprioridades.presentation.sistema.SistemaScreen
 import com.example.registroprioridades.presentation.ticket.TicketListScreen
+import com.example.registroprioridades.presentation.ticket.TicketScreen
 
 @Composable
 fun PrioridadNavHost(
@@ -23,58 +23,88 @@ fun PrioridadNavHost(
         navController = navHostController,
         startDestination = Screen.HomeScreen
     ) {
-        composable<Screen.PrioridadList> {
-            PrioridadListScreen(
-                createPrioridad = {
-                    navHostController.navigate(Screen.Prioridad(0))
-                },
-                onEditPrioridad = {
-                    navHostController.navigate(Screen.PrioridadEdit(it))
-                },
-                onDeletePrioridad = {
-                    navHostController.navigate(Screen.PrioridadDelete(it))
-                }
-            )
-        }
         composable<Screen.HomeScreen>  {
             HomeScreen(navController = navHostController)
         }
-        composable<Screen.TicketList> {
-            TicketListScreen(
-                createTicket = {
-                    navHostController.navigate(Screen.Ticket(0))
+        composable<Screen.SistemaList> {
+            SistemaListScreen(
+                createSistema = {
+                    navHostController.navigate(Screen.Sistema(0, false))
                 },
-                onEditTicket = {
-                    navHostController.navigate(Screen.TicketEdit(it))
+                onEditSistema = {
+                    navHostController.navigate(Screen.Sistema(it, false))
                 },
-                onDeleteTicket = {
-                    navHostController.navigate(Screen.TicketDelete(it))
+                onDeleteSistema = {
+                    navHostController.navigate(Screen.Sistema(it, true))
+                }
+            )
+        }
+        composable<Screen.Sistema> {
+            val args = it.toRoute<Screen.Sistema>()
+            SistemaScreen(
+                sistemaId = args.sistemaId,
+                goBack = {
+                    navHostController.navigateUp()
+                },
+                isSistemaDelete = args.isSistemaDelete
+            )
+        }
+        composable<Screen.ClienteList> {
+            ClienteListScreen(
+                createCliente = {
+                    navHostController.navigate(Screen.Cliente(0, false))
+                },
+                onEditCliente = {
+                    navHostController.navigate(Screen.Cliente(it, false))
+                },
+                onDeleteCliente = {
+                    navHostController.navigate(Screen.Cliente(it, true))
+                }
+            )
+        }
+        composable<Screen.Cliente> {
+            val args = it.toRoute<Screen.Cliente>()
+            ClienteScreen(
+                clienteId = args.clienteId,
+                goBack = {
+                    navHostController.navigateUp()
+                },
+                isClienteDelete = args.isClienteDelete
+            )
+        }
+        composable<Screen.PrioridadList> {
+            PrioridadListScreen(
+                createPrioridad = {
+                    navHostController.navigate(Screen.Prioridad(0, false))
+                },
+                onEditPrioridad = {
+                    navHostController.navigate(Screen.Prioridad(it, false))
+                },
+                onDeletePrioridad = {
+                    navHostController.navigate(Screen.Prioridad(it, true))
                 }
             )
         }
         composable<Screen.Prioridad> {
             val args = it.toRoute<Screen.Prioridad>()
             PrioridadScreen(
-                goBack = {
-                    navHostController.navigateUp()
-                }
-            )
-        }
-        composable<Screen.PrioridadEdit> {
-            val args = it.toRoute<Screen.PrioridadEdit>()
-            PrioridadEditScreen(
                 prioridadId = args.prioridadId,
                 goBack = {
                     navHostController.navigateUp()
-                }
+                },
+                isPrioridadDelete = args.isPrioridadDelete
             )
         }
-        composable<Screen.PrioridadDelete>{ backStackEntry ->
-            val args = backStackEntry.toRoute<Screen.PrioridadDelete>()
-            PrioridadDeleteScreen(
-                prioridadId = args.prioridadId,
-                goBack = {
-                    navHostController.navigateUp()
+        composable<Screen.TicketList> {
+            TicketListScreen(
+                createTicket = {
+                    navHostController.navigate(Screen.Ticket(0, false))
+                },
+                onEditTicket = {
+                    navHostController.navigate(Screen.Ticket(it, false))
+                },
+                onDeleteTicket = {
+                    navHostController.navigate(Screen.Ticket(it, true))
                 }
             )
         }
@@ -84,25 +114,8 @@ fun PrioridadNavHost(
                 TicketId = args.ticketId,
                 goBack = {
                     navHostController.navigateUp()
-                }
-            )
-        }
-        composable<Screen.TicketEdit> {
-            val args = it.toRoute<Screen.TicketEdit>()
-            TicketEditScreen(
-                ticketId = args.ticketId,
-                goBack = {
-                    navHostController.navigateUp()
-                }
-            )
-        }
-        composable<Screen.TicketDelete> { backStackEntry ->
-            val args = backStackEntry.toRoute<Screen.TicketDelete>()
-            TicketDeleteScreen(
-                ticketId = args.ticketId,
-                goBack = {
-                    navHostController.navigateUp()
-                }
+                },
+                isTicketDelete = args.isTicketDelete
             )
         }
     }
