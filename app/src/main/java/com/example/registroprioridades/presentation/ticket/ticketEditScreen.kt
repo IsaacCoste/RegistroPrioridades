@@ -45,7 +45,7 @@ fun TicketEditScreen(
     TicketEditBodyScreen(
         uiState = uiState,
         onFechaChange = viewModel::onFechaChange,
-        onClienteChange = viewModel::onClienteChange,
+        onClienteChange = viewModel::onClienteIdChange,
         onAsuntoChange = viewModel::onAsuntoChange,
         onDescripcionChange = viewModel::onDescripcionChange,
         onPrioridadIdChange = viewModel::onPrioridadChange,
@@ -58,7 +58,7 @@ fun TicketEditScreen(
 fun TicketEditBodyScreen(
     uiState: UiState,
     onFechaChange: (Date) -> Unit,
-    onClienteChange: (String) -> Unit,
+    onClienteChange: (Int) -> Unit,
     onAsuntoChange: (String) -> Unit,
     onDescripcionChange: (String) -> Unit,
     onPrioridadIdChange: (Int) -> Unit,
@@ -99,14 +99,14 @@ fun TicketEditBodyScreen(
                 },
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
             )
-            OutlinedTextField(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                label = { Text("Cliente") },
-                value = uiState.cliente,
-                onValueChange = onClienteChange
-            )
+//            OutlinedTextField(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(8.dp),
+//                label = { Text("Cliente") },
+//                value = uiState.cliente,
+//                onValueChange = onClienteChange
+//            )
             OutlinedTextField(
                 modifier = Modifier
                     .fillMaxWidth()
