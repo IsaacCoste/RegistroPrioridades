@@ -4,23 +4,21 @@ import kotlinx.serialization.Serializable
 
 sealed class Screen {
     @Serializable
+    data object HomeScreen : Screen()
+    @Serializable
     data object PrioridadList : Screen()
     @Serializable
-    data class Prioridad(val prioridadId: Int) : Screen()
-    @Serializable
-    data class PrioridadEdit(val prioridadId: Int) : Screen()
-    @Serializable
-    data class PrioridadDelete(val prioridadId: Int) : Screen()
+    data class Prioridad(val prioridadId: Int, val isPrioridadDelete: Boolean) : Screen()
     @Serializable
     data object TicketList : Screen()
     @Serializable
-    data class Ticket(val ticketId: Int) : Screen()
+    data class Ticket(val ticketId: Int, val isTicketDelete: Boolean) : Screen()
     @Serializable
-    data class TicketEdit(val ticketId: Int) : Screen()
+    data object SistemaList : Screen()
     @Serializable
-    data class TicketDelete(val ticketId: Int) : Screen()
+    data class Sistema(val sistemaId: Int, val isSistemaDelete: Boolean) : Screen()
     @Serializable
-    data object HomeScreen : Screen()
-
-
+    data object ClienteList : Screen()
+    @Serializable
+    data class Cliente(val clienteId: Int, val isClienteDelete: Boolean) : Screen()
 }
