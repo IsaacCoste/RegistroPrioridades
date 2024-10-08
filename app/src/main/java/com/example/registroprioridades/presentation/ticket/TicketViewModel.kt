@@ -2,9 +2,13 @@ package com.example.registroprioridades.presentation.ticket
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.registroprioridades.data.local.entities.PrioridadEntity
-import com.example.registroprioridades.data.local.entities.TicketEntity
+import com.example.registroprioridades.data.remote.dto.ClienteDto
+import com.example.registroprioridades.data.remote.dto.PrioridadDto
+import com.example.registroprioridades.data.remote.dto.SistemaDto
+import com.example.registroprioridades.data.remote.dto.TicketDto
+import com.example.registroprioridades.data.repository.ClienteRepository
 import com.example.registroprioridades.data.repository.PrioridadRepository
+import com.example.registroprioridades.data.repository.SistemaRepository
 import com.example.registroprioridades.data.repository.TicketRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,7 +21,9 @@ import javax.inject.Inject
 @HiltViewModel
 class TicketViewModel @Inject constructor(
     private val ticketRepository: TicketRepository,
-    private val prioridadRepository: PrioridadRepository
+    private val prioridadRepository: PrioridadRepository,
+    private val sistemaRepository: SistemaRepository,
+    private val clienteRepository: ClienteRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(UiState())
     val uiState = _uiState.asStateFlow()
@@ -25,6 +31,8 @@ class TicketViewModel @Inject constructor(
     init {
         getTickets()
         getPrioridades()
+        getSistemas()
+        getClientes()
     }
 
     fun save() {
@@ -41,7 +49,7 @@ class TicketViewModel @Inject constructor(
 
     private fun validate(): String? {
         return when {
-            _uiState.value.cliente.isBlank() -> "El nombre del cliente no puede estar vacío"
+            _uiState.value.clienteId.toString().isBlank() -> "El nombre del cliente no puede estar vacío"
             _uiState.value.asunto.isBlank() -> "El asunto no puede estar vacío"
             _uiState.value.descripcion.isBlank() -> "La descripción no puede estar vacía"
             _uiState.value.fecha == null -> "La fecha no puede estar vacía"
@@ -54,10 +62,12 @@ class TicketViewModel @Inject constructor(
             it.copy(
                 ticketId = null,
                 fecha = Date(),
-                cliente = "",
+                clienteId = 0,
+                sistemaId = 0,
+                prioridadId = 0,
+                solicitadoPor = "",
                 asunto = "",
                 descripcion = "",
-                prioridadId = 0,
                 errorMessage = null
             )
         }
@@ -69,12 +79,14 @@ class TicketViewModel @Inject constructor(
                 val ticket = ticketRepository.getTicket(ticketId)
                 _uiState.update {
                     it.copy(
-                        ticketId = ticket?.ticketId,
-                        fecha = ticket?.fecha,
-                        prioridadId = ticket?.prioridadId ?: 0,
-                        cliente = ticket?.cliente ?: "",
-                        asunto = ticket?.asunto ?: "",
-                        descripcion = ticket?.descripcion ?: ""
+                        ticketId = ticket.ticketId,
+                        fecha = ticket.fecha,
+                        clienteId = ticket.clienteId ?: 0,
+                        sistemaId = ticket.sistemaId ?: 0,
+                        prioridadId = ticket.prioridadId ?: 0,
+                        solicitadoPor = ticket.solicitadoPor ?: "",
+                        asunto = ticket.asunto ?: "",
+                        descripcion = ticket.descripcion ?: ""
                     )
                 }
             }
@@ -83,25 +95,40 @@ class TicketViewModel @Inject constructor(
 
     fun delete() {
         viewModelScope.launch {
-            ticketRepository.deleteTicket(_uiState.value.toEntity())
+            ticketRepository.deleteTicket(_uiState.value.ticketId!!)
+            nuevo()
         }
     }
 
     private fun getTickets() {
         viewModelScope.launch {
-            ticketRepository.getTickets().collect { tickets ->
-                _uiState.update {
-                    it.copy(tickets = tickets)
-                }
+            val tickets = ticketRepository.getTickets()
+            _uiState.update {
+                it.copy(tickets = tickets)
             }
         }
     }
     private fun getPrioridades() {
         viewModelScope.launch {
-            prioridadRepository.getPrioridades().collect { prioridades ->
-                _uiState.update {
-                    it.copy(prioridades = prioridades)
-                }
+            val prioridades = prioridadRepository.getPrioridades()
+            _uiState.update {
+                it.copy(prioridades = prioridades)
+            }
+        }
+    }
+    private fun getSistemas() {
+        viewModelScope.launch {
+            val sistemas = sistemaRepository.getSistemas()
+            _uiState.update {
+                it.copy(sistemas = sistemas)
+            }
+        }
+    }
+    private fun getClientes() {
+        viewModelScope.launch {
+            val clientes = clienteRepository.getClientes()
+            _uiState.update {
+                it.copy(clientes = clientes)
             }
         }
     }
@@ -111,9 +138,9 @@ class TicketViewModel @Inject constructor(
             it.copy(ticketId = ticketId)
         }
     }
-    fun onClienteChange(cliente: String) {
+    fun onClienteIdChange(clienteId: Int) {
         _uiState.update {
-            it.copy(cliente = cliente, errorMessage = null)
+            it.copy(clienteId = clienteId, errorMessage = null)
         }
     }
 
@@ -140,25 +167,41 @@ class TicketViewModel @Inject constructor(
             it.copy(prioridadId = prioridadId)
         }
     }
+    fun onSolicitadoPorChange(solicitadoPor: String) {
+        _uiState.update {
+            it.copy(solicitadoPor = solicitadoPor, errorMessage = null)
+        }
+    }
+    fun onSistemaIdChange(sistemaId: Int) {
+        _uiState.update {
+            it.copy(sistemaId = sistemaId, errorMessage = null)
+        }
+    }
 }
 
 data class UiState(
     val ticketId: Int? = null,
-    val fecha: Date? = null,
+    val fecha: Date = Date(),
+    val clienteId: Int = 0,
+    val sistemaId: Int = 0,
     val prioridadId: Int = 0,
-    val cliente: String = "",
+    val solicitadoPor: String = "",
     val asunto: String = "",
     val descripcion: String = "",
     val errorMessage: String? = null,
-    val tickets: List<TicketEntity> = emptyList(),
-    val prioridades: List<PrioridadEntity> = emptyList()
+    val tickets: List<TicketDto> = emptyList(),
+    val prioridades: List<PrioridadDto> = emptyList(),
+    val sistemas: List<SistemaDto> = emptyList(),
+    val clientes: List<ClienteDto> = emptyList()
 )
 
-fun UiState.toEntity() = TicketEntity(
+fun UiState.toEntity() = TicketDto(
     ticketId = ticketId,
     fecha = fecha,
+    clienteId = clienteId,
+    sistemaId = sistemaId,
     prioridadId = prioridadId,
-    cliente = cliente,
+    solicitadoPor = solicitadoPor,
     asunto = asunto,
     descripcion = descripcion
 )
