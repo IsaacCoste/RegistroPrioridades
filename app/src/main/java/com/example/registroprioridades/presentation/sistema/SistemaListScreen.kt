@@ -1,4 +1,4 @@
-package com.example.registroprioridades.presentation.prioridad
+package com.example.registroprioridades.presentation.sistema
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -15,49 +15,49 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.registroprioridades.data.remote.dto.PrioridadDto
+import com.example.registroprioridades.data.remote.dto.SistemaDto
 
 @Composable
-fun PrioridadListScreen(
-    viewModel: PrioridadViewModel = hiltViewModel(),
-    createPrioridad: () -> Unit,
-    onEditPrioridad: (Int) -> Unit,
-    onDeletePrioridad: (Int) -> Unit
+fun SistemaListScreen(
+    viewModel: SistemasViewModel = hiltViewModel(),
+    createSistema: () -> Unit,
+    onEditSistema: (Int) -> Unit,
+    onDeleteSistema: (Int) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    PrioridadListBodyScreen(
+    SistemaListBodyScreen(
         uiState = uiState,
-        createPrioridad = createPrioridad,
-        onEditPrioridad = onEditPrioridad,
-        onDeletePrioridad = onDeletePrioridad
+        createSistema = createSistema,
+        onEditSistema = onEditSistema,
+        onDeleteSistema = onDeleteSistema
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PrioridadListBodyScreen(
+fun SistemaListBodyScreen(
     uiState: UiState,
-    createPrioridad: () -> Unit,
-    onEditPrioridad: (Int) -> Unit,
-    onDeletePrioridad: (Int) -> Unit
+    createSistema: () -> Unit,
+    onEditSistema: (Int) -> Unit,
+    onDeleteSistema: (Int) -> Unit
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Lista de Prioridades", style = MaterialTheme.typography.titleLarge) },
+                title = { Text("Lista de Sistemas", style = MaterialTheme.typography.titleLarge) },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors()
             )
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = createPrioridad,
+                onClick = createSistema,
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = Color.White
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "Agregar Prioridad"
+                    contentDescription = "Agregar Sistema"
                 )
             }
         }
@@ -73,11 +73,11 @@ fun PrioridadListBodyScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(vertical = 16.dp)
             ) {
-                items(uiState.prioridades) { prioridad ->
+                items(uiState.sistemas) { sistema ->
                     ListRow(
-                        prioridad = prioridad,
-                        onEditPrioridad = onEditPrioridad,
-                        onDeletePrioridad = onDeletePrioridad
+                        sistema = sistema,
+                        onEditSistema = onEditSistema,
+                        onDeleteSistema = onDeleteSistema
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                 }
@@ -88,35 +88,33 @@ fun PrioridadListBodyScreen(
 
 @Composable
 fun ListRow(
-    prioridad: PrioridadDto,
-    onEditPrioridad: (Int) -> Unit,
-    onDeletePrioridad: (Int) -> Unit
+    sistema: SistemaDto,
+    onEditSistema: (Int) -> Unit,
+    onDeleteSistema: (Int) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { expanded = true }
-            .padding(vertical = 8.dp),
+            .padding(vertical = 8.dp)
+            .clickable { expanded = true },
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
             Text(
-                text = "ID: ${prioridad.prioridadId}",
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Bold,
+                text = "ID: ${sistema.sistemasId}",
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Start
             )
             Text(
-                text = "Descripción: ${prioridad.descripción}",
+                text = "Nombre: ${sistema.sistemaNombre}",
                 style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Start
-            )
-            Text(
-                text = "Días de Compromiso: ${prioridad.diasCompromiso}",
-                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Start
             )
         }
@@ -125,17 +123,17 @@ fun ListRow(
             onDismissRequest = { expanded = false }
         ) {
             DropdownMenuItem(
-                text = { Text("Editar", style = MaterialTheme.typography.bodyMedium) },
+                text = { Text("Editar") },
                 onClick = {
                     expanded = false
-                    onEditPrioridad(prioridad.prioridadId!!)
+                    onEditSistema(sistema.sistemasId!!)
                 }
             )
             DropdownMenuItem(
-                text = { Text("Eliminar", style = MaterialTheme.typography.bodyMedium) },
+                text = { Text("Eliminar") },
                 onClick = {
                     expanded = false
-                    onDeletePrioridad(prioridad.prioridadId!!)
+                    onDeleteSistema(sistema.sistemasId!!)
                 }
             )
         }

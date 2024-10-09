@@ -10,8 +10,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -20,6 +21,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,15 +34,26 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 @Composable
 fun PrioridadScreen(
     viewModel: PrioridadViewModel = hiltViewModel(),
-    goBack: () -> Unit
+    prioridadId: Int,
+    goBack: () -> Unit,
+    isPrioridadDelete: Boolean
 ) {
+    LaunchedEffect(prioridadId) {
+        if (isPrioridadDelete) {
+            viewModel.selectedPrioridad(prioridadId)
+        } else {
+            viewModel.selectedPrioridad(prioridadId)
+        }
+    }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     PrioridadBodyScreen(
         uiState = uiState,
         onDescripcionChange = viewModel::onDescripcionChange,
         onDiasCompromisoChange = viewModel::onDiasCompromisoChange,
         savePrioridad = viewModel::save,
-        goBack = goBack
+        deletePrioridad = viewModel::delete,
+        goBack = goBack,
+        isPrioridadDelete = isPrioridadDelete
     )
 }
 
@@ -51,7 +64,9 @@ fun PrioridadBodyScreen(
     onDescripcionChange: (String) -> Unit,
     onDiasCompromisoChange: (Int) -> Unit,
     savePrioridad: () -> Unit,
-    goBack: () -> Unit
+    deletePrioridad: () -> Unit,
+    goBack: () -> Unit,
+    isPrioridadDelete: Boolean
 ) {
     Scaffold { innerPadding ->
         Column(
@@ -77,6 +92,16 @@ fun PrioridadBodyScreen(
                 value = uiState.descripcion,
                 onValueChange = onDescripcionChange
             )
+            uiState.errorDescripcion?.let {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp),
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    Text(text = it, color = Color.Red)
+                }
+            }
             OutlinedTextField(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -89,21 +114,17 @@ fun PrioridadBodyScreen(
                 },
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
             )
-            Spacer(modifier = Modifier.padding(8.dp))
-            uiState.errorMessage?.let {
+            uiState.errorDiasCompromiso?.let {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 8.dp),
-                    horizontalArrangement = Arrangement.Center
+                        .padding(start = 16.dp),
+                    horizontalArrangement = Arrangement.Start
                 ) {
-                    Text(
-                        text = it,
-                        color = Color.Red
-                    )
+                    Text(text = it, color = Color.Red)
                 }
             }
-
+            Spacer(modifier = Modifier.padding(8.dp))
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -112,21 +133,35 @@ fun PrioridadBodyScreen(
             ) {
                 OutlinedButton(onClick = goBack) {
                     Icon(
-                        imageVector = Icons.Default.ArrowBack,
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Volver"
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text("Volver")
                 }
-                OutlinedButton(onClick = {
-                    savePrioridad()
-                }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Guardar"
-                    )
-                    Text("Guardar")
+                if (!isPrioridadDelete) {
+                    OutlinedButton(onClick = {
+                        savePrioridad()
+                    }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Guardar"
+                        )
+                        Text("Guardar")
+                    }
+                } else {
+                    OutlinedButton(onClick = {
+                        deletePrioridad()
+                    }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            tint = Color.Red,
+                            contentDescription = "Eliminar"
+                        )
+                        Text("Eliminar")
+                    }
                 }
             }
         }

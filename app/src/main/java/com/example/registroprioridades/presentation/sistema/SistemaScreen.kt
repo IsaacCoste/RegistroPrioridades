@@ -1,4 +1,4 @@
-package com.example.registroprioridades.presentation.prioridad
+package com.example.registroprioridades.presentation.sistema
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -8,10 +8,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -23,38 +24,41 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
-fun PrioridadEditScreen(
-    viewModel: PrioridadViewModel = hiltViewModel(),
-    prioridadId: Int,
-    goBack: () -> Unit
+fun SistemaScreen(
+    viewModel: SistemasViewModel = hiltViewModel(),
+    sistemaId: Int,
+    goBack: () -> Unit,
+    isSistemaDelete: Boolean
 ) {
-    LaunchedEffect(prioridadId) {
-        viewModel.selectedPrioridad(prioridadId)
+    LaunchedEffect(sistemaId) {
+        viewModel.selectedSistema(sistemaId)
     }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    PrioridadEditBodyScreen(
+    SistemaBodyScreen(
         uiState = uiState,
-        onDescripcionChange = viewModel::onDescripcionChange,
-        onDiasCompromisoChange = viewModel::onDiasCompromisoChange,
-        savePrioridad = viewModel::save,
-        goBack = goBack
+        onSistemaNombreChange = viewModel::onSistemaNombreChange,
+        saveSistema = viewModel::save,
+        deleteSistema = viewModel::delete,
+        goBack = goBack,
+        isSistemaDelete = isSistemaDelete
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PrioridadEditBodyScreen(
+fun SistemaBodyScreen(
     uiState: UiState,
-    onDescripcionChange: (String) -> Unit,
-    onDiasCompromisoChange: (Int) -> Unit,
-    savePrioridad: () -> Unit,
-    goBack: () -> Unit
+    onSistemaNombreChange: (String) -> Unit,
+    saveSistema: () -> Unit,
+    deleteSistema: () -> Unit,
+    goBack: () -> Unit,
+    isSistemaDelete: Boolean
 ) {
     Scaffold { innerPadding ->
         Column(
@@ -64,7 +68,7 @@ fun PrioridadEditBodyScreen(
                 .padding(8.dp)
         ) {
             Text(
-                text = "Editar Prioridad",
+                text = "Registro de Sistemas",
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 16.dp),
@@ -76,62 +80,59 @@ fun PrioridadEditBodyScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(8.dp),
-                label = { Text("Descripción") },
-                value = uiState.descripcion,
-                onValueChange = onDescripcionChange
+                label = { Text("Nombre del Sistema") },
+                value = uiState.sistemaNombre,
+                onValueChange = onSistemaNombreChange
             )
-            OutlinedTextField(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                label = { Text("Días Compromiso") },
-                value = uiState.diasCompromiso.toString(),
-                onValueChange = { newValue ->
-                    val diasCompromiso = newValue.toIntOrNull() ?: 0
-                    onDiasCompromisoChange(diasCompromiso)
-                },
-                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
-            )
-            Spacer(modifier = Modifier.padding(8.dp))
             uiState.errorMessage?.let {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 8.dp),
-                    horizontalArrangement = Arrangement.Center
+
                 ) {
-                    Text(
-                        text = it,
-                        color = Color.Red
-                    )
+                    Text(text = it, color = Color.Red)
                 }
             }
+            Spacer(modifier = Modifier.padding(8.dp))
             Row(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxSize()
                     .padding(horizontal = 10.dp, vertical = 4.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 OutlinedButton(onClick = goBack) {
                     Icon(
-                        imageVector = Icons.Default.ArrowBack,
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Volver"
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text("Volver")
                 }
-                OutlinedButton(
-                    onClick = savePrioridad,
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Guardar"
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Guardar")
+                if (!isSistemaDelete) {
+                    OutlinedButton(onClick = {
+                        saveSistema()
+                    }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Guardar"
+                        )
+                        Text("Guardar")
+                    }
+                } else {
+                    OutlinedButton(onClick = {
+                        deleteSistema()
+                    }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            tint = Color.Red,
+                            contentDescription = "Eliminar"
+                        )
+                        Text("Eliminar")
+                    }
                 }
             }
         }
     }
 }
-
