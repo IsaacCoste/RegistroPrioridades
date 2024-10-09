@@ -49,6 +49,7 @@ fun SistemaScreen(
         isSistemaDelete = isSistemaDelete
     )
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SistemaBodyScreen(
@@ -83,14 +84,17 @@ fun SistemaBodyScreen(
                 value = uiState.sistemaNombre,
                 onValueChange = onSistemaNombreChange
             )
-            Spacer(modifier = Modifier.padding(8.dp))
             uiState.errorMessage?.let {
-                Text(
-                    text = it,
-                    color = Color.Red
-                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+
+                ) {
+                    Text(text = it, color = Color.Red)
+                }
             }
-            Row (
+            Spacer(modifier = Modifier.padding(8.dp))
+            Row(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 10.dp, vertical = 4.dp),

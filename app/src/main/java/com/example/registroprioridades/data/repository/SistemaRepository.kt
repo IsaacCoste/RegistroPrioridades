@@ -2,6 +2,7 @@ package com.example.registroprioridades.data.repository
 
 import com.example.registroprioridades.data.remote.dto.SistemaDto
 import com.example.registroprioridades.data.remote.SistemaApi
+import retrofit2.Response
 import javax.inject.Inject
 
 class SistemaRepository @Inject constructor(
@@ -11,7 +12,7 @@ class SistemaRepository @Inject constructor(
 
     suspend fun getSistema(id: Int) = sistemaApi.getSistema(id)
 
-    suspend fun deleteSistema(id: Int) = sistemaApi.deleteSistema(id)
+    suspend fun deleteSistema(id: Int): Response<Void?> = sistemaApi.deleteSistema(id)
 
     suspend fun getSistemas() = sistemaApi.getAllSistema()
 }

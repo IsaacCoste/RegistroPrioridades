@@ -55,10 +55,13 @@ class SistemasViewModel @Inject constructor(
             }
         }
     }
-    fun delete () {
+    fun delete() {
         viewModelScope.launch {
-            sistemasRepository.deleteSistema(_uiState.value.sistemaId!!)
-            nuevo()
+            val response = sistemasRepository.deleteSistema(_uiState.value.sistemaId!!)
+            if (response.isSuccessful) {
+                nuevo()
+            }
+            getSistemas()
         }
     }
     private fun getSistemas() {

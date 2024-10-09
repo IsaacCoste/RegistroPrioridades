@@ -118,26 +118,25 @@ fun ListRow(
                 textAlign = TextAlign.Start
             )
         }
-    }
-
-    DropdownMenu(
-        expanded = expanded,
-        onDismissRequest = { expanded = false }
-    ) {
-        DropdownMenuItem(
-            text = { Text("Editar") },
-            onClick = {
-                expanded = false
-                onEditSistema(sistema.sistemasId!!)
-            }
-        )
-        DropdownMenuItem(
-            text = { Text("Eliminar") },
-            onClick = {
-                expanded = false
-                onDeleteSistema(sistema.sistemasId!!)
-            }
-        )
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            DropdownMenuItem(
+                text = { Text("Editar") },
+                onClick = {
+                    expanded = false
+                    onEditSistema(sistema.sistemasId!!)
+                }
+            )
+            DropdownMenuItem(
+                text = { Text("Eliminar") },
+                onClick = {
+                    expanded = false
+                    onDeleteSistema(sistema.sistemasId!!)
+                }
+            )
+        }
     }
     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
 }
