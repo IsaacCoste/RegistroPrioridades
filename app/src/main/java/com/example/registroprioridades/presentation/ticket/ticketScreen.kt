@@ -103,6 +103,16 @@ fun TicketBodyScreen(
                         modifier = Modifier.clickable { showDatePicker = true })
                 }
             )
+            uiState.errorFecha?.let {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp),
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    Text(text = it, color = MaterialTheme.colorScheme.error)
+                }
+            }
             if (showDatePicker) {
                 DatePickerDialog(
                     onDateSelected = { date ->
@@ -119,7 +129,8 @@ fun TicketBodyScreen(
                         .padding(8.dp)
                         .clickable { clienteExpanded = true },
                     label = { Text("Cliente") },
-                    value = if (uiState.clienteId != 0) uiState.clientes.firstOrNull { it.clienteId == uiState.clienteId }?.nombre ?: "" else "",
+                    value = if (uiState.clienteId != 0) uiState.clientes.firstOrNull { it.clienteId == uiState.clienteId }?.nombre
+                        ?: "" else "",
                     onValueChange = {},
                     readOnly = true,
                     trailingIcon = {
@@ -145,6 +156,16 @@ fun TicketBodyScreen(
                     }
                 }
             }
+            uiState.errorClienteId?.let {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp),
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    Text(text = it, color = MaterialTheme.colorScheme.error)
+                }
+            }
             Box(modifier = Modifier.fillMaxWidth()) {
                 OutlinedTextField(
                     modifier = Modifier
@@ -152,7 +173,8 @@ fun TicketBodyScreen(
                         .padding(8.dp)
                         .clickable { sistemaExpanded = true },
                     label = { Text("Sistema") },
-                    value = if (uiState.sistemaId != 0) uiState.sistemas.firstOrNull { it.sistemasId == uiState.sistemaId }?.sistemaNombre ?: "" else "",
+                    value = if (uiState.sistemaId != 0) uiState.sistemas.firstOrNull { it.sistemasId == uiState.sistemaId }?.sistemaNombre
+                        ?: "" else "",
                     onValueChange = {},
                     readOnly = true,
                     trailingIcon = {
@@ -178,6 +200,16 @@ fun TicketBodyScreen(
                     }
                 }
             }
+            uiState.errorSistemaId?.let {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp),
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    Text(text = it, color = MaterialTheme.colorScheme.error)
+                }
+            }
             Box(modifier = Modifier.fillMaxWidth()) {
                 OutlinedTextField(
                     modifier = Modifier
@@ -185,7 +217,8 @@ fun TicketBodyScreen(
                         .padding(8.dp)
                         .clickable { prioridadExpanded = true },
                     label = { Text("Prioridad") },
-                    value = uiState.prioridades.firstOrNull { it.prioridadId == uiState.prioridadId }?.descripción ?: "",
+                    value = uiState.prioridades.firstOrNull { it.prioridadId == uiState.prioridadId }?.descripción
+                        ?: "",
                     onValueChange = {},
                     readOnly = true,
                     trailingIcon = {
@@ -211,7 +244,16 @@ fun TicketBodyScreen(
                     }
                 }
             }
-
+            uiState.errorPrioridadId?.let {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp),
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    Text(text = it, color = MaterialTheme.colorScheme.error)
+                }
+            }
             OutlinedTextField(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -220,6 +262,19 @@ fun TicketBodyScreen(
                 value = uiState.solicitadoPor,
                 onValueChange = onSolicitadoPorChange
             )
+            uiState.errorSolicitadoPor?.let {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp),
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    Text(
+                        text = it,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
             OutlinedTextField(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -228,7 +283,16 @@ fun TicketBodyScreen(
                 value = uiState.asunto,
                 onValueChange = onAsuntoChange
             )
-
+            uiState.errorAsunto?.let {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp),
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    Text(text = it, color = MaterialTheme.colorScheme.error)
+                }
+            }
             OutlinedTextField(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -237,23 +301,17 @@ fun TicketBodyScreen(
                 value = uiState.descripcion,
                 onValueChange = onDescripcionChange
             )
-
-            Spacer(modifier = Modifier.padding(8.dp))
-
-            uiState.errorMessage?.let {
+            uiState.errorDescripcion?.let {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 8.dp),
-                    horizontalArrangement = Arrangement.Center
+                        .padding(start = 16.dp),
+                    horizontalArrangement = Arrangement.Start
                 ) {
-                    Text(
-                        text = it,
-                        color = Color.Red
-                    )
+                    Text(text = it, color = MaterialTheme.colorScheme.error)
                 }
             }
-
+            Spacer(modifier = Modifier.padding(8.dp))
             Row(
                 modifier = Modifier
                     .fillMaxWidth()

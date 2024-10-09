@@ -37,24 +37,86 @@ class TicketViewModel @Inject constructor(
 
     fun save() {
         viewModelScope.launch {
-            val errorMessage = validate()
-            if (errorMessage != null) {
-                _uiState.update { it.copy(errorMessage = errorMessage) }
-            } else {
+            if (validated()) {
                 ticketRepository.saveTicket(_uiState.value.toEntity())
                 nuevo()
             }
         }
     }
 
-    private fun validate(): String? {
-        return when {
-            _uiState.value.clienteId.toString().isBlank() -> "El nombre del cliente no puede estar vacío"
-            _uiState.value.asunto.isBlank() -> "El asunto no puede estar vacío"
-            _uiState.value.descripcion.isBlank() -> "La descripción no puede estar vacía"
-            _uiState.value.fecha == null -> "La fecha no puede estar vacía"
-            else -> null
+    private fun validated(): Boolean {
+        var isValid = true
+        if (_uiState.value.fecha == null) {
+            _uiState.update {
+                it.copy(errorFecha = "La fecha no puede estar vacía")
+            }
+            isValid = false
+        } else {
+            _uiState.update {
+                it.copy(errorFecha = null)
+            }
         }
+        if (_uiState.value.clienteId <= 0) {
+            _uiState.update {
+                it.copy(errorClienteId = "El cliente no puede estar vacío")
+            }
+            isValid = false
+        } else {
+            _uiState.update {
+                it.copy(errorClienteId = null)
+            }
+        }
+        if (_uiState.value.sistemaId <= 0) {
+            _uiState.update {
+                it.copy(errorSistemaId = "El sistema no puede estar vacío")
+            }
+            isValid = false
+        } else {
+            _uiState.update {
+                it.copy(errorSistemaId = null)
+            }
+        }
+        if (_uiState.value.prioridadId <= 0) {
+            _uiState.update {
+                it.copy(errorPrioridadId = "La prioridad no puede estar vacía")
+            }
+            isValid = false
+        } else {
+            _uiState.update {
+                it.copy(errorPrioridadId = null)
+            }
+        }
+        if (_uiState.value.solicitadoPor.isBlank()) {
+            _uiState.update {
+                it.copy(errorSolicitadoPor = "El solicitado por no puede estar vacío")
+            }
+            isValid = false
+        } else {
+            _uiState.update {
+                it.copy(errorSolicitadoPor = null)
+            }
+        }
+        if (_uiState.value.asunto.isBlank()) {
+            _uiState.update {
+                it.copy(errorAsunto = "El asunto no puede estar vacío")
+            }
+            isValid = false
+        } else {
+            _uiState.update {
+                it.copy(errorAsunto = null)
+            }
+        }
+        if (_uiState.value.descripcion.isBlank()) {
+            _uiState.update {
+                it.copy(errorDescripcion = "La descripción no puede estar vacía")
+            }
+            isValid = false
+        } else {
+            _uiState.update {
+                it.copy(errorDescripcion = null)
+            }
+        }
+        return isValid
     }
 
     fun nuevo() {
@@ -68,7 +130,7 @@ class TicketViewModel @Inject constructor(
                 solicitadoPor = "",
                 asunto = "",
                 descripcion = "",
-                errorMessage = null
+                errorFecha = null
             )
         }
     }
@@ -81,12 +143,12 @@ class TicketViewModel @Inject constructor(
                     it.copy(
                         ticketId = ticket.ticketId,
                         fecha = ticket.fecha,
-                        clienteId = ticket.clienteId ?: 0,
-                        sistemaId = ticket.sistemaId ?: 0,
-                        prioridadId = ticket.prioridadId ?: 0,
-                        solicitadoPor = ticket.solicitadoPor ?: "",
-                        asunto = ticket.asunto ?: "",
-                        descripcion = ticket.descripcion ?: ""
+                        clienteId = ticket.clienteId,
+                        sistemaId = ticket.sistemaId,
+                        prioridadId = ticket.prioridadId,
+                        solicitadoPor = ticket.solicitadoPor,
+                        asunto = ticket.asunto,
+                        descripcion = ticket.descripcion
                     )
                 }
             }
@@ -95,8 +157,10 @@ class TicketViewModel @Inject constructor(
 
     fun delete() {
         viewModelScope.launch {
-            ticketRepository.deleteTicket(_uiState.value.ticketId!!)
-            nuevo()
+            val response = ticketRepository.deleteTicket(_uiState.value.ticketId!!)
+            if (response.isSuccessful) {
+                nuevo()
+            }
         }
     }
 
@@ -108,6 +172,7 @@ class TicketViewModel @Inject constructor(
             }
         }
     }
+
     private fun getPrioridades() {
         viewModelScope.launch {
             val prioridades = prioridadRepository.getPrioridades()
@@ -116,6 +181,7 @@ class TicketViewModel @Inject constructor(
             }
         }
     }
+
     private fun getSistemas() {
         viewModelScope.launch {
             val sistemas = sistemaRepository.getSistemas()
@@ -124,6 +190,7 @@ class TicketViewModel @Inject constructor(
             }
         }
     }
+
     private fun getClientes() {
         viewModelScope.launch {
             val clientes = clienteRepository.getClientes()
@@ -138,27 +205,28 @@ class TicketViewModel @Inject constructor(
             it.copy(ticketId = ticketId)
         }
     }
+
     fun onClienteIdChange(clienteId: Int) {
         _uiState.update {
-            it.copy(clienteId = clienteId, errorMessage = null)
+            it.copy(clienteId = clienteId)
         }
     }
 
     fun onAsuntoChange(asunto: String) {
         _uiState.update {
-            it.copy(asunto = asunto, errorMessage = null)
+            it.copy(asunto = asunto)
         }
     }
 
     fun onDescripcionChange(descripcion: String) {
         _uiState.update {
-            it.copy(descripcion = descripcion, errorMessage = null)
+            it.copy(descripcion = descripcion)
         }
     }
 
     fun onFechaChange(fecha: Date) {
         _uiState.update {
-            it.copy(fecha = fecha, errorMessage = null)
+            it.copy(fecha = fecha)
         }
     }
 
@@ -167,14 +235,16 @@ class TicketViewModel @Inject constructor(
             it.copy(prioridadId = prioridadId)
         }
     }
+
     fun onSolicitadoPorChange(solicitadoPor: String) {
         _uiState.update {
-            it.copy(solicitadoPor = solicitadoPor, errorMessage = null)
+            it.copy(solicitadoPor = solicitadoPor)
         }
     }
+
     fun onSistemaIdChange(sistemaId: Int) {
         _uiState.update {
-            it.copy(sistemaId = sistemaId, errorMessage = null)
+            it.copy(sistemaId = sistemaId)
         }
     }
 }
@@ -188,7 +258,13 @@ data class UiState(
     val solicitadoPor: String = "",
     val asunto: String = "",
     val descripcion: String = "",
-    val errorMessage: String? = null,
+    val errorFecha: String? = null,
+    val errorClienteId: String? = null,
+    val errorSistemaId: String? = null,
+    val errorPrioridadId: String? = null,
+    val errorSolicitadoPor: String? = null,
+    val errorAsunto: String? = null,
+    val errorDescripcion: String? = null,
     val tickets: List<TicketDto> = emptyList(),
     val prioridades: List<PrioridadDto> = emptyList(),
     val sistemas: List<SistemaDto> = emptyList(),

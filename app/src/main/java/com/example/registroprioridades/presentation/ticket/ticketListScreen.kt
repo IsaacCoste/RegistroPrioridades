@@ -164,7 +164,6 @@ fun TicketRow(
                 style = MaterialTheme.typography.bodyMedium
             )
         }
-
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false }
