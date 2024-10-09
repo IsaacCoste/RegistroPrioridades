@@ -92,6 +92,16 @@ fun PrioridadBodyScreen(
                 value = uiState.descripcion,
                 onValueChange = onDescripcionChange
             )
+            uiState.errorDescripcion?.let {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp),
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    Text(text = it, color = Color.Red)
+                }
+            }
             OutlinedTextField(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -104,21 +114,17 @@ fun PrioridadBodyScreen(
                 },
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
             )
-            Spacer(modifier = Modifier.padding(8.dp))
-            uiState.errorMessage?.let {
+            uiState.errorDiasCompromiso?.let {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 8.dp),
-                    horizontalArrangement = Arrangement.Center
+                        .padding(start = 16.dp),
+                    horizontalArrangement = Arrangement.Start
                 ) {
-                    Text(
-                        text = it,
-                        color = Color.Red
-                    )
+                    Text(text = it, color = Color.Red)
                 }
             }
-
+            Spacer(modifier = Modifier.padding(8.dp))
             Row(
                 modifier = Modifier
                     .fillMaxWidth()

@@ -23,16 +23,36 @@ class PrioridadViewModel @Inject constructor(
     }
     fun save() {
         viewModelScope.launch {
-            if (_uiState.value.descripcion.isBlank() || _uiState.value.diasCompromiso <= 0) {
-                _uiState.update {
-                    it.copy(errorMessage = "La prioridad no puede estar vacia")
-                }
-            }
-            else{
+            if (validate()) {
                 prioridadRepository.savePrioridad(_uiState.value.toEntity())
                 nuevo()
             }
         }
+    }
+    private fun validate(): Boolean {
+        var isValid = true
+
+        if (_uiState.value.descripcion.isBlank()) {
+            _uiState.update {
+                it.copy(errorDescripcion = "La prioridad no puede estar vacía")
+            }
+            isValid = false
+        } else {
+            _uiState.update {
+                it.copy(errorDescripcion = null)
+            }
+        }
+        if (_uiState.value.diasCompromiso <= 0) {
+            _uiState.update {
+                it.copy(errorDiasCompromiso = "Los días de compromiso deben ser mayores que cero")
+            }
+            isValid = false
+        } else {
+            _uiState.update {
+                it.copy(errorDiasCompromiso = null)
+            }
+        }
+        return isValid
     }
     private fun nuevo() {
         _uiState.update {
@@ -40,7 +60,8 @@ class PrioridadViewModel @Inject constructor(
                 prioridadId = null,
                 descripcion = "",
                 diasCompromiso = 0,
-                errorMessage = null
+                errorDescripcion = null,
+                errorDiasCompromiso = null
             )
         }
     }
@@ -51,8 +72,8 @@ class PrioridadViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         prioridadId = prioridad.prioridadId,
-                        descripcion = prioridad.descripción ?: "",
-                        diasCompromiso = prioridad.diasCompromiso ?: 0
+                        descripcion = prioridad.descripción,
+                        diasCompromiso = prioridad.diasCompromiso
                     )
                 }
             }
@@ -60,8 +81,10 @@ class PrioridadViewModel @Inject constructor(
     }
     fun delete() {
         viewModelScope.launch {
-            prioridadRepository.deletePrioridad(_uiState.value.prioridadId!!)
-            nuevo()
+            val response = prioridadRepository.deletePrioridad(_uiState.value.prioridadId!!)
+            if (response.isSuccessful) {
+                nuevo()
+            }
         }
     }
     private fun getPrioridades() {
@@ -72,7 +95,6 @@ class PrioridadViewModel @Inject constructor(
             }
         }
     }
-
     fun onDescripcionChange(descripcion: String) {
         _uiState.update {
             it.copy(descripcion = descripcion)
@@ -89,7 +111,8 @@ data class UiState(
     val prioridadId: Int? = null,
     val descripcion: String = "",
     val diasCompromiso: Int = 0,
-    val errorMessage: String? = null,
+    val errorDescripcion: String? = null,
+    val errorDiasCompromiso: String? = null,
     val prioridades: List<PrioridadDto> = emptyList()
 )
 
