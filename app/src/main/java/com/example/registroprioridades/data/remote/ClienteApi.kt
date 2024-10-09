@@ -1,6 +1,7 @@
 package com.example.registroprioridades.data.remote
 
 import com.example.registroprioridades.data.remote.dto.ClienteDto
+import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -19,5 +20,5 @@ interface ClienteApi {
     suspend fun saveCliente(@Body clienteDto: ClienteDto?): ClienteDto
 
     @DELETE("api/Clientes/{id}")
-    suspend fun deleteCliente(@Path("id") id: Int)
+    suspend fun deleteCliente(@Path("id") id: Int): Response<Void?>
 }

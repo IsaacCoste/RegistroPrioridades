@@ -36,13 +36,9 @@ fun ClienteScreen(
     clienteId: Int,
     goBack: () -> Unit,
     isClienteDelete: Boolean
-){
+) {
     LaunchedEffect(clienteId) {
-        if (isClienteDelete) {
-            viewModel.selectedCliente(clienteId)
-        } else {
-            viewModel.selectedCliente(clienteId)
-        }
+        viewModel.selectedCliente(clienteId)
     }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     ClienteBodyScreen(
@@ -101,6 +97,16 @@ fun ClienteBodyScreen(
                 value = uiState.nombre,
                 onValueChange = onNombreChange
             )
+            uiState.errorNombre?.let {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp),
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    Text(text = it, color = Color.Red)
+                }
+            }
             OutlinedTextField(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -110,6 +116,16 @@ fun ClienteBodyScreen(
                 onValueChange = onTelefonoChange,
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Phone)
             )
+            uiState.errorTelefono?.let {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp),
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    Text(text = it, color = Color.Red)
+                }
+            }
             OutlinedTextField(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -119,6 +135,16 @@ fun ClienteBodyScreen(
                 onValueChange = onCelularChange,
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Phone)
             )
+            uiState.errorCelular?.let {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp),
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    Text(text = it, color = Color.Red)
+                }
+            }
             OutlinedTextField(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -127,6 +153,16 @@ fun ClienteBodyScreen(
                 value = uiState.rnc,
                 onValueChange = onRncChange
             )
+            uiState.errorRnc?.let {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp),
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    Text(text = it, color = Color.Red)
+                }
+            }
             OutlinedTextField(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -135,6 +171,16 @@ fun ClienteBodyScreen(
                 value = uiState.email,
                 onValueChange = onEmailChange
             )
+            uiState.errorEmail?.let {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp),
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    Text(text = it, color = Color.Red)
+                }
+            }
             OutlinedTextField(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -143,6 +189,16 @@ fun ClienteBodyScreen(
                 value = uiState.direccion,
                 onValueChange = onDireccionChange
             )
+            uiState.errorDireccion?.let {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp),
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    Text(text = it, color = Color.Red)
+                }
+            }
             Spacer(modifier = Modifier.padding(8.dp))
             Row(
                 modifier = Modifier
