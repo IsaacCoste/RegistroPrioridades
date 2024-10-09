@@ -1,6 +1,7 @@
 package com.example.registroprioridades.data.remote
 
 import com.example.registroprioridades.data.remote.dto.SistemaDto
+import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -19,5 +20,5 @@ interface SistemaApi {
     suspend fun saveSistema(@Body sistemaDto: SistemaDto?): SistemaDto
 
     @DELETE("api/Sistemas/{id}")
-    suspend fun deleteSistema(@Path("id") id: Int)
+    suspend fun deleteSistema(@Path("id") id: Int): Response<Void?>
 }
